@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slot Makinesi</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #222;
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 400px;
+    margin: 20px auto;
+    background: #333;
+    padding: 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+  input {
+    padding: 10px;
+    margin: 8px 0;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  button {
+    padding: 12px 15px;
+    margin: 8px 5px 0 0;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  button:hover {
+    background: #218838;
+  }
+  .hidden {
+    display: none;
+  }
+  #slot {
+    font-size: 50px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+  }
+  .reel {
+    width: 60px;
+    height: 60px;
+    background: #444;
+    margin: 0 5px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: spin 0.5s ease-in-out;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotateX(0deg);
+    }
+    50% {
+      transform: rotateX(180deg);
+    }
+    100% {
+      transform: rotateX(360deg);
+    }
+  }
+  table {
+    width: 100%;
+    color: #fff;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  table,
+  th,
+  td {
+    border: 1px solid #555;
+    padding: 8px 5px;
+    word-break: break-word;
+  }
+  .iban-box {
+    background: #111;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 450px) {
+    .container {
+      width: 95%;
+      padding: 15px;
+    }
+    #slot {
+      font-size: 36px;
+    }
+    .reel {
+      width: 45px;
+      height: 45px;
+      margin: 0 3px;
+    }
+    button {
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      margin: 6px 3px 0 0;
+    }
+    input {
+      font-size: 0.9rem;
+      padding: 8px;
+    }
+    table, th, td {
+      font-size: 0.8rem;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container" id="loginContainer">
+    <h2>Giriş Yap</h2>
+    <input type="text" id="loginUsername" placeholder="Kullanıcı Adı" autocomplete="username" /><br />
+    <input type="password" id="loginPassword" placeholder="Şifre" autocomplete="current-password" /><br />
+    <button onclick="login()">Giriş</button>
+    <p>
+      Hesabınız yok mu?
+      <button onclick="showRegister()">Kayıt Ol</button>
+    </p>
+    <p>
+      Admin Girişi
+      <button onclick="showAdminLogin()">Admin</button>
+    </p>
+  </div>
+
+  <div class="container hidden" id="registerContainer">
+    <h2>Kayıt Ol</h2>
+    <input type="text" id="regName" placeholder="İsim Soyisim" autocomplete="name" /><br />
+    <input type="text" id="regUsername" placeholder="Kullanıcı Adı" autocomplete="username" /><br />
+    <input type="password" id="regPassword" placeholder="Şifre" autocomplete="new-password" /><br />
+    <input type="tel" id="regPhone" placeholder="Telefon Numarası" autocomplete="tel" /><br />
+    <input type="text" id="regIBAN" placeholder="IBAN" autocomplete="off" /><br />
+    <button onclick="register()">Kaydol</button>
+    <button onclick="showLogin()">Geri</button>
+  </div>
+
+  <div class="container hidden" id="slotContainer">
+    <h2>Slot Makinesi</h2>
+    <div class="iban-box">
+      <p><strong>Kasa IBAN:</strong> TR36 0082 9000 0949 1957 3725 92</p>
+      <p><strong>WhatsApp:</strong> 5459164276</p>
+      <p>IBAN'a para gönderdikten sonra WhatsApp'tan bize ulaşın, bakiyeniz yüklenecektir.</p>
+      <p>Çekim talebi için WhatsApp'tan yazın: 5459164276</p>
+    </div>
+    <p>
+      Bakiye: <span id="balance">0</span> TL
+    </p>
+    <div id="slot">
+      <div class="reel">🍒</div>
+      <div class="reel">🍋</div>
+      <div class="reel">🍊</div>
+    </div>
+    <button onclick="playSlot()">Oyna (10 TL)</button>
+    <br /><br />
+    <button onclick="logout()">Çıkış Yap</button>
+  </div>
+
+  <div class="container hidden" id="adminLoginContainer">
+    <h2>Admin Girişi</h2>
+    <input type="text" id="adminUsername" placeholder="Kullanıcı Adı" autocomplete="username" /><br />
+    <input type="password" id="adminPassword" placeholder="Şifre" autocomplete="current-password" /><br />
+    <button onclick="adminLogin()">Giriş</button>
+    <button onclick="showLogin()">Geri</button>
+  </div>
+
+  <div class="container hidden" id="adminPanel">
+    <h2>Admin Paneli</h2>
+    <table id="userTable">
+      <tr>
+        <th>Kullanıcı Adı</th>
+        <th>İsim Soyisim</th>
+        <th>Telefon</th>
+        <th>IBAN</th>
+        <th>Bakiye</th>
+        <th>İşlem</th>
+      </tr>
+    </table>
+    <button onclick="adminLogout()">Çıkış</button>
+  </div>
+
+  <script>
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    let currentUser = localStorage.getItem("loggedInUser") || null;
+
+    // Görünüm fonksiyonları
+    function showLogin() {
+      hideAll();
+      document.getElementById("loginContainer").classList.remove("hidden");
+      clearInputs(["loginUsername","loginPassword"]);
+    }
+    function showRegister() {
+      hideAll();
+      document.getElementById("registerContainer").classList.remove("hidden");
+      clearInputs(["regName","regUsername","regPassword","regPhone","regIBAN"]);
+    }
+    function showAdminLogin() {
+      hideAll();
+      document.getElementById("adminLoginContainer").classList.remove("hidden");
+      clearInputs(["adminUsername","adminPassword"]);
+    }
+    function showSlotMachine() {
+      hideAll();
+      document.getElementById("slotContainer").classList.remove("hidden");
+      updateBalance();
+    }
+    function showAdminPanel() {
+      hideAll();
+      document.getElementById("adminPanel").classList.remove("hidden");
+      renderUserTable();
+    }
+    function hideAll() {
+      document.getElementById("loginContainer").classList.add("hidden");
+      document.getElementById("registerContainer").classList.add("hidden");
+      document.getElementById("adminLoginContainer").classList.add("hidden");
+      document.getElementById("slotContainer").classList.add("hidden");
+      document.getElementById("adminPanel").classList.add("hidden");
+    }
+    function clearInputs(ids) {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = "";
+      });
+    }
+
+    // Kayıt fonksiyonu
+    function register() {
+      const name = document.getElementById("regName").value.trim();
+      const username = document.getElementById("regUsername").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const phone = document.getElementById("regPhone").value.trim();
+      const iban = document.getElementById("regIBAN").value.trim();
+
+      if (!name || !username || !password || !phone || !iban) {
+        alert("Tüm alanları doldurun!");
+        return;
+      }
+      if (users.find(u => u.username === username)) {
+        alert("Bu kullanıcı adı alınmış.");
+        return;
+      }
+      users.push({ name, username, password, phone, iban, balance: 0 });
+      saveUsers();
+      alert("Kayıt başarılı! Giriş yapabilirsiniz.");
+      showLogin();
+    }
+
+    // Giriş fonksiyonu
+    function login() {
+      const username = document.getElementById("loginUsername").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      const user = users.find(u => u.username === username && u.password === password);
+      if (!user) {
+        alert("Kullanıcı adı veya şifre yanlış!");
+        return;
+      }
+      currentUser = username;
+      localStorage.setItem("loggedInUser", username);
+      showSlotMachine();
+    }
+
+    // Bakiye güncelleme
+    function updateBalance() {
+      const user = users.find(u => u.username === currentUser);
+      document.getElementById("balance").innerText = user ? user.balance : 0;
+    }
+
+    // Slot oyunu oynama
+    function playSlot() {
+      const user = users.find(u => u.username === currentUser);
+      if (user.balance < 10) {
+        alert("Yetersiz bakiye!");
+        return;
+      }
+      user.balance -= 10;
+      const symbols = ["🍒", "🍋", "🍊", "🍉", "⭐", "🔔"];
+      let reels = document.querySelectorAll(".reel");
+
+      reels.forEach((reel, i) => {
+        reel.style.animation = "spin 0.5s ease-in-out";
+        setTimeout(() => {
+          let randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+          reel.textContent = randomSymbol;
+          reel.style.animation = "";
+        }, 500 + i * 200);
+      });
+
+      setTimeout(() => {
+        let results = Array.from(reels).map(r => r.textContent);
+        let points = 0;
+        if (results[0] === results[1] && results[1] === results[2]) points = 25;
+        else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) points = 10;
+
+        if (points > 0) {
+          user.balance += points;
+          alert(points + " TL kazandınız!");
+        }
+        saveUsers();
+        updateBalance();
+      }, 1400);
+    }
+
+    // Çıkış yap
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      currentUser = null;
+      showLogin();
+    }
+
+    // Admin girişi
+    function adminLogin() {
+      const username = document.getElementById("adminUsername").value.trim();
+      const password = document.getElementById("adminPassword").value.trim();
+      if (username === "admin" && password === "1907nazmibaba") {
+        showAdminPanel();
+      } else {
+        alert("Admin bilgileri yanlış!");
+      }
+    }
+
+    // Kullanıcı tablosunu oluştur
+    function renderUserTable() {
+      const table = document.getElementById("userTable");
+      table.innerHTML = `
+        <tr>
+          <th>Kullanıcı Adı</th>
+          <th>İsim Soyisim</th>
+          <th>Telefon</th>
+          <th>IBAN</th>
+          <th>Bakiye</th>
+          <th>İşlem</th>
+        </tr>`;
+      users.forEach((u) => {
+        let row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${u.username}</td>
+          <td>${u.name}</td>
+          <td>${u.phone}</td>
+          <td>${u.iban}</td>
+          <td>${u.balance}</td>
+          <td><button onclick="addBalance('${u.username}')">Bakiye Ekle</button></td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    // Admin bakiye ekleme
+    function addBalance(username) {
+      let amountStr = prompt("Eklenecek miktar (TL):");
+      if (amountStr === null) return; // iptal
+      let amount = parseInt(amountStr);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Geçerli pozitif bir sayı girin!");
+        return;
+      }
+      let user = users.find(u => u.username === username);
+      if (!user) {
+        alert("Kullanıcı bulunamadı!");
+        return;
+      }
+      user.balance += amount;
+      saveUsers();
+      renderUserTable();
+      alert(`Kullanıcı ${user.username} bakiyesi ${amount} TL artırıldı.`);
+    }
+
+    // Admin çıkış
+    function adminLogout() {
+      showLogin();
+    }
+
+    // Kullanıcıları kaydet
+    function saveUsers() {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+
+    // Sayfa yüklendiğinde otomatik giriş kontrolü
+    window.onload = function () {
+      if (currentUser) {
+        showSlotMachine();
+      } else {
+        showLogin();
+      }
+    };
+  </script>
+</body>
+</html>
